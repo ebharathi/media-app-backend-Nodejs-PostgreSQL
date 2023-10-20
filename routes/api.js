@@ -1,29 +1,28 @@
 const router=require('express').Router();
-const {executeQuery}=require('../postgreSQL')
-
-router.post('/execute',async(req,res)=>{
+const {insert}=require('../postgreSQL')
+const bcrypt=require('bcrypt')
+const jwt=require('jsonwebtoken')
+router.post('/signup',async(req,res)=>{
     try {
-         console.log("[+]QUERY INCOMING..........");
-         await executeQuery(req.body.query).then((response)=>{
+         console.log("[+]SIGNUP CALLED..........");
+         const {username,password}=req.body;
+         const hashedPassword=await bcrypt.hash(password,10);
+         await insert(username,hashedPassword).then((response)=>{
             if(response.error==false)
-            {
-            console.log("[+]QUERY EXECUTON SUCCESS");
-               res.json({
+              res.json({
                 error:false,
+                userId:response.userId,
                 message:response.message
-               })
-            }
+            })
             else
-            {
-                console.log("[-]QUERY EXECUTION FAILED")
-                res.json({
-                    error:true,
-                    message:response.message
-                })
-            }
+              res.json({
+                  error:true,
+                  message:response.message
+            })
          })
+         
     } catch (error) {
-         console.log("[-]ERROR IN ROUTER API");
+         console.error("[-]ERROR IN ROUTER API FOR SIGNUP");
          res.json({
             error:true,
             message:error.message

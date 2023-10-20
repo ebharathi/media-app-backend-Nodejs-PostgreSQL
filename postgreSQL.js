@@ -9,24 +9,30 @@ const client=new Client(
         port:5432
     }
 )
-const executeQuery=async(query)=>{
-      try {
-        console.log("[+]QUERY EXECUTION CALLED");
-        await client.connect().then(()=>console.log("[+]CONNECTED"));
-        await client.query(query);
-        return {
-            error:false,
-            message:"Query executed succesfully"
-        }
-      } catch (error) {
-        console.log("[-]QUERY EXECUTON FAILED");
-        return {
-            error:true,
-            message:error.message
-        }
-      }
-      finally{
-        await client.end().then(()=>console.log("[+]DISCONNECTED"))
-      }
+const insert=async(name,password)=>{
+  try {
+     console.log("[+]INSERTION CALLED[+]")
+     await client.connect();
+     console.log("[+]CONNECTED")
+     const result=await client.query('INSERT INTO users(name,password)VALUES($1,$2) RETURNING id',[name,password]);
+     console.log("[+]INSERTION DONE");
+    //  console.log("-->",result);
+     return {
+      error:false,
+      userId:result.rows[0].id,
+      message:"New user created"
+     }
+  } catch (error) {
+    console.error("[-]INSERT QUERY EXECUTON FAILED");
+    console.log("--->",error)
+    return {
+        error:true,
+        message:error.detail
+    }
+  }
+  finally{
+    await client.end();
+    console.log("[+]DISCONNECTED")
+  }
 }
-module.exports={executeQuery}
+module.exports={insert}
