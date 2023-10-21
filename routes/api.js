@@ -1,7 +1,8 @@
 const router=require('express').Router();
 const {signup,login}=require('../postgreSQL')
+//JWT VERIFICATION
+const {jwtVerification}=require("../middleware/jwtVerify");
 const bcrypt=require('bcrypt')
-const jwt=require('jsonwebtoken')
 router.post('/signup',async(req,res)=>{
     try {
          console.log("[+]SIGNUP CALLED..........");
@@ -39,6 +40,7 @@ router.post('/login',async(req,res)=>{
                 console.log("[+]CHECKING CONFIRMED")
                 res.json({
                     error:false,
+                    token:response.token,
                     message:response.message
                 })
             }
@@ -58,5 +60,20 @@ router.post('/login',async(req,res)=>{
            message:error.message
         })
     }
+})
+router.post("/user",jwtVerification,async(req,res)=>{
+       try {
+            res.json({
+                error:false,
+                data:req.userId
+            })
+       } catch (error) {
+          console.log("User router error");
+          console.log("-->",error);
+          res.json({
+            error:true,
+            message:error.message
+          })
+       }
 })
 module.exports={router}

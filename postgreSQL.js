@@ -1,5 +1,7 @@
 const {Client,Pool}=require('pg');
-const bcrypt=require('bcrypt')
+const bcrypt=require('bcrypt');
+const jwt=require('jsonwebtoken')
+
 const pool=new Pool(
     {
         host:'127.0.0.1',
@@ -50,9 +52,12 @@ const login=async(reqName,reqPassword)=>{
          const isPasswordSame=await bcrypt.compare(reqPassword,user.password)
                if(isPasswordSame)
                {
-                  // console.log("[+]user exists")
+                  //Generate JWT token
+                  const token=jwt.sign({userId:user.id},'qazwsxplmokn',{expiresIn:'1h'});
+                  
                   return {
                     error:false,
+                    token:token,
                     message:"User login successful"
                   }
                 }
