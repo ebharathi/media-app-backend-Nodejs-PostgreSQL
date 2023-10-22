@@ -133,11 +133,18 @@ const user_details=async(userId)=>{
   const client=await pool.connect();
   console.log("[+}CONNECTED");
   try {
-     const result=await client.query('SELECT users.id,users.name,user_image.img_id,user_image.img_name,user_image.img_data FROM users LEFT JOIN user_image ON users.id=user_image.user_id WHERE user_id=$1',[userId]);
+     const result=await client.query('SELECT users.id,users.name,user_image.img_id,user_image.img_name,user_image.img_data,user_image.img_mime_type FROM users LEFT JOIN user_image ON users.id=user_image.user_id WHERE users.id=$1',[userId]);
      console.log("USER DETAILS-->",result.rows[0]);
+     const {id,name,img_id,img_name,img_data}=result.rows[0];
+     const modifiedData = { ...result.rows[0] };
+
+     // Check if img_data is not null and modify it
+     if (img_data !== null) {
+        modifiedData.img_data = img_data.toString('base64');
+     }
      return {
       error:false,
-      data:result.rows[0]
+      data:modifiedData
      }
   } catch (error) {
       console.log("QUERY FAILED ON GETTING USER DETAILS");
