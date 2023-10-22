@@ -1,5 +1,5 @@
 const router=require('express').Router();
-const {signup,login,uploadImage}=require('../postgreSQL')
+const {signup,login,uploadImage,user_details}=require('../postgreSQL')
 //JWT VERIFICATION
 const {jwtVerification}=require("../middleware/jwtVerify");
 //FOR AVATAR UPLOAD
@@ -68,9 +68,22 @@ router.post('/login',async(req,res)=>{
 })
 router.post("/user",jwtVerification,async(req,res)=>{
        try {
-            res.json({
-                error:false,
-                data:req.userId
+            await user_details(req.userId).then((resp)=>{
+                  if(resp.error==false)
+                   {
+                    console.log("USER DETAILS FECTHED SUCCESSFULLY");
+                    res.json({
+                        error:false,
+                        data:resp.data
+                    })
+                   }
+                   else{
+                    console.log("FAILED TO FETCH USER DETAILS");
+                    res.json({
+                        error:true,
+                        message:resp.message
+                    })
+                   }
             })
        } catch (error) {
           console.log("User router error");

@@ -128,4 +128,28 @@ const uploadImage=async(userId,filename,filebuffer,filetype)=>{
     console.log("[+]DISCONECTED")
   }
 }
-module.exports={signup,login,uploadImage}
+//get user data
+const user_details=async(userId)=>{
+  const client=await pool.connect();
+  console.log("[+}CONNECTED");
+  try {
+     const result=await client.query('SELECT users.id,users.name,user_image.img_id,user_image.img_name,user_image.img_data FROM users LEFT JOIN user_image ON users.id=user_image.user_id WHERE user_id=$1',[userId]);
+     console.log("USER DETAILS-->",result.rows[0]);
+     return {
+      error:false,
+      data:result.rows[0]
+     }
+  } catch (error) {
+      console.log("QUERY FAILED ON GETTING USER DETAILS");
+      console.log("ERROR-->",error);
+      return {
+        error:true,
+        message:error.message
+      }
+  }
+  finally{
+     await client.release();
+     console.log("[+]DISCONNECTED");
+  }
+}
+module.exports={signup,login,uploadImage,user_details}
