@@ -1,5 +1,5 @@
 const router=require('express').Router();
-const {signup,login,uploadImage,user_details}=require('../postgreSQL')
+const {signup,login,uploadImage,user_details,create_channel}=require('../postgreSQL')
 //JWT VERIFICATION
 const {jwtVerification}=require("../middleware/jwtVerify");
 //FOR AVATAR UPLOAD
@@ -126,5 +126,29 @@ router.post('/upload',jwtVerification,upload.single('file'),async(req,res)=>{
             message:error.message
          })
      }
+})
+router.post('/channel/create',jwtVerification,async(req,res)=>{
+    try {
+         await create_channel(req.userId,req.body.name,req.body.desc).then((resp)=>{
+              if(resp.error==false)
+                res.json({
+                    error:false,
+                    channelId:resp.channelID,
+                    message:"New channel created"
+                })
+            else
+              res.json({
+                    error:true,
+                    message:resp.message
+        })
+         })
+    } catch (error) {
+         console.log("ERROR IN CREATING CHANNEL");
+         console.log("-->",error);
+         res.json({
+            error:true,
+            message:error.message
+         })
+    }
 })
 module.exports={router}

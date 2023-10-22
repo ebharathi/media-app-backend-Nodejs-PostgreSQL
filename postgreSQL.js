@@ -159,4 +159,28 @@ const user_details=async(userId)=>{
      console.log("[+]DISCONNECTED");
   }
 }
-module.exports={signup,login,uploadImage,user_details}
+//for creating channel
+const create_channel=async(userId,name,desc)=>{
+  const client=await pool.connect();
+  console.log("[+]CONNECTED"); 
+  try {
+      const result=await client.query('INSERT INTO channel(name,owner,description)VALUES($1,$2,$3) RETURNING id',[name,userId,desc])
+      console.log("R-->",result.rows[0]);
+      return {
+        error:false,
+        channelID:result.rows[0].id
+      }
+    } catch (error) {
+      console.log("QUERY EXECUTION FAILED WHILE CREATING A CHANNEL");
+      console.log(error);
+      return {
+        error:true,
+        message:error.message
+      }
+   }
+   finally{
+    await client.release()
+    console.log("[-]DISCONNECTED");
+  }
+}
+module.exports={signup,login,uploadImage,user_details,create_channel}
