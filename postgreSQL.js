@@ -11,6 +11,7 @@ const pool=new Pool(
         port:5432
     }
 )
+//sgnup
 const signup=async(name,password)=>{
   const client=await pool.connect()
   console.log("[+]CONNECTED")
@@ -90,4 +91,41 @@ const login=async(reqName,reqPassword)=>{
     console.log("[+]DISCONNECTED");
   }
 }
-module.exports={signup,login}
+//img upload
+const uploadImage=async(userId,filename,filebuffer,filetype)=>{
+  const client=await pool.connect()
+  console.log("[+]CONNECTED");
+  try {
+    //if the user already has an img, update it
+     const user=await client.query('SELECT img_id FROM user_image WHERE user_id=$1',[userId]);
+     if(user.rows.length>0)
+     {
+          const result=await client.query('UPDATE user_image SET img_name=$1,img_data=$2,img_mime_type=$3 WHERE img_id=$4 RETURNING img_id,user_id',[filename,filebuffer,filetype,user.rows[0].img_id])
+          console.log("UPDATED IMAGE--->",result.rows[0]);
+          return {
+            error:false,
+            img_id:result.rows[0].img_id,
+          }
+     }
+     else{
+        const result=await client.query('INSERT INTO user_image(user_id,img_name,img_data,img_mime_type)VALUES($1,$2,$3,$4) RETURNING img_id',[userId,filename,filebuffer,filetype]);
+        console.log("RESPONSE FOR QUERY-->",result.rows[0]);
+        return {
+          error:false,
+          img_id:result.rows[0].img_id,
+        }
+     }
+  } catch (error) {
+      console.log("QUERY EXECUTION FAILED FOR IMG UPLOAD;");
+      console.log(error);
+      return {
+        error:true,
+        message:error.message
+      }
+  }
+  finally{
+    await client.release();
+    console.log("[+]DISCONECTED")
+  }
+}
+module.exports={signup,login,uploadImage}

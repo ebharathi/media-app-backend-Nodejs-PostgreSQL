@@ -1,7 +1,12 @@
 const router=require('express').Router();
-const {signup,login}=require('../postgreSQL')
+const {signup,login,uploadImage}=require('../postgreSQL')
 //JWT VERIFICATION
 const {jwtVerification}=require("../middleware/jwtVerify");
+//FOR AVATAR UPLOAD
+const fs=require('fs');
+const multer=require('multer');
+const storage=multer.memoryStorage();
+const upload=multer({storage:storage});
 const bcrypt=require('bcrypt')
 router.post('/signup',async(req,res)=>{
     try {
@@ -75,5 +80,38 @@ router.post("/user",jwtVerification,async(req,res)=>{
             message:error.message
           })
        }
+})
+router.post('/upload',jwtVerification,upload.single('file'),async(req,res)=>{
+     try {
+          console.log("PROFILE IMAGE UPLOADING FOR THE USER_ID: ",req.userId);
+          let userId=req.userId;
+          const fileBuffer=req.file.buffer;
+          const fileName=req.file.originalname;
+          const fileType=req.file.mimetype;
+          console.log("file-->",req.file);
+          await uploadImage(userId,fileName,fileBuffer,fileType).then((response)=>{
+             if(response.error==false)
+             {
+                res.json({
+                    error:false,
+                    img_id:response.img_id,
+                    message:"User profile image updated"
+                })
+             }
+             else{
+                res.json({
+                    error:true,
+                    message:response.message
+                })
+             }
+          })
+     } catch (error) {
+         console.log("ERROR WHILE UPLOADING IMG FOR THE USER");
+         console.log("ERROR: ",error);
+         res.json({
+            error:true,
+            message:error.message
+         })
+     }
 })
 module.exports={router}
