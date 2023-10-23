@@ -7,7 +7,7 @@ const fs=require('fs');
 const multer=require('multer');
 const storage=multer.memoryStorage();
 const upload=multer({storage:storage});
-const bcrypt=require('bcrypt')
+const bcrypt=require('bcryptjs')
 router.post('/signup',async(req,res)=>{
     try {
          console.log("[+]SIGNUP CALLED..........");
