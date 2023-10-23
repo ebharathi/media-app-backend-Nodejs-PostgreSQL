@@ -1,5 +1,5 @@
 const router=require('express').Router();
-const {signup,login,uploadImage,user_details,follower_details,create_channel,get_all_channels,get_particular_channel_detail,join_channel}=require('../postgreSQL')
+const {signup,login,uploadImage,user_details,follower_details,create_channel,get_all_channels,get_particular_channel_detail,join_channel,add_message,list_messages}=require('../postgreSQL')
 //JWT VERIFICATION
 const {jwtVerification}=require("../middleware/jwtVerify");
 //FOR AVATAR UPLOAD
@@ -242,6 +242,52 @@ router.post('/channel/join',jwtVerification,async(req,res)=>{
          })
      } catch (error) {
          console.log("ERROR IN ROUTER FOR JOINING A CHANNEL");
+         console.log(error);
+         res.json({
+            error:true,
+            message:error.message
+         })
+     }
+})
+router.post('/message/add',jwtVerification,async(req,res)=>{
+    try {
+        await add_message(req.userId,req.body.channelId,req.body.message).then((resp)=>{
+            if(resp.error==false)
+             res.json({
+              error:false,
+              msg_id:resp.id
+            })
+            else
+              res.json({
+               error:true,
+               message:resp.message
+            })
+        })
+    } catch (error) {
+         console.log("ERROR IN ADDING MESSAGE");
+         console.log(error);
+         res.json({
+            error:true,
+            message:error.message
+         })
+    }
+})
+router.post('/message/list',jwtVerification,async(req,res)=>{
+     try {
+        await list_messages(req.body.channelId).then((resp)=>{
+            if(resp.error==false)
+             res.json({
+              error:false,
+              data:resp.data
+            })
+            else
+            res.json({
+             error:true,
+             message:resp.message
+            })
+        })
+     } catch (error) {
+         console.log("ERROR IN LISTING MESSAGES");
          console.log(error);
          res.json({
             error:true,

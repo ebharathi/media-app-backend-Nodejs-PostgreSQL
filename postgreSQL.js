@@ -295,4 +295,55 @@ const join_channel=async(userId,channelId)=>{
       console.log("[-]DISCONNECTED");
     }
 }
-module.exports={signup,login,uploadImage,user_details,follower_details,create_channel,get_all_channels,get_particular_channel_detail,join_channel}
+//creating a message
+const add_message=async(userId,channelId,text)=>{
+  const client=await pool.connect();
+  console.log("[+]CONNECTED");
+    try {
+      const result=await client.query('INSERT INTO message(user_id,channel_id,msge)VALUES($1,$2,$3) RETURNING id',[userId,channelId,text]);
+      return {
+           error:false,
+           id:result.rows[0].id
+      }
+    } catch (error) {
+       console.log("QUERY EXECUTION FAILED AT ADDING MESSAGE");
+       console.log(error);
+       return {
+        error:true,
+        message:error.message
+       }
+    }
+    finally{
+      await client.release();
+      console.log("[-]DSICONNECTED");
+    }
+}
+//listing all messages in a channel
+const list_messages=async(channelId)=>{
+  const client=await pool.connect();
+  console.log("[+]CONNECTED");
+  try {
+     const result=await client.query('SELECT * FROM message WHERE channel_id=$1 ORDER BY id',[channelId]);
+      if(result.rows.length==0)
+        return {
+          error:false,
+          data:[]
+        }
+     return {
+      error:false,
+      data:result.rows
+     }
+  } catch (error) {
+      console.log("QUERY EXECUTION FAILED FOR LISTING MESG")
+      console.log(error);
+      return {
+        error:true,
+        message:error.message
+      }
+  }
+  finally{
+    await client.release();
+    console.log("[-]DISCONNECTED");
+  }
+}
+module.exports={signup,login,uploadImage,user_details,follower_details,create_channel,get_all_channels,get_particular_channel_detail,join_channel,add_message,list_messages}
