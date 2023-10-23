@@ -1,15 +1,20 @@
 const {Client,Pool}=require('pg');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken')
-
+require('dotenv').config()
+// const pool=new Pool(
+//     {
+//         host:'127.0.0.1',
+//         user:'postgres',
+//         database:'postgres',
+//         password:'elaya55555',
+//         port:5432
+//     }
+// )
 const pool=new Pool(
-    {
-        host:'127.0.0.1',
-        user:'postgres',
-        database:'postgres',
-        password:'elaya55555',
-        port:5432
-    }
+  {
+    connectionString:process.env.DB_URL
+  }
 )
 //sgnup
 const signup=async(name,password)=>{
