@@ -1,5 +1,5 @@
 const router=require('express').Router();
-const {signup,login,uploadImage,user_details,create_channel,get_all_channels,join_channel}=require('../postgreSQL')
+const {signup,login,uploadImage,user_details,follower_details,create_channel,get_all_channels,get_particular_channel_detail,join_channel}=require('../postgreSQL')
 //JWT VERIFICATION
 const {jwtVerification}=require("../middleware/jwtVerify");
 //FOR AVATAR UPLOAD
@@ -94,6 +94,29 @@ router.post("/user",jwtVerification,async(req,res)=>{
           })
        }
 })
+router.post("/follower",jwtVerification,async(req,res)=>{
+    try {
+        await follower_details(req.body.id).then((resp)=>{
+            if(resp.error==false)
+             res.json({
+              error:false,
+              data:resp.data
+            })
+            else
+             res.json({
+              error:true,
+              message:resp.message
+            })
+        })
+    } catch (error) {
+         console.log("ERROR IN FOLLOWERS FETCHING")
+         console.log(error)
+         res.json({
+            error:true,
+            message:error.message
+         })
+    }
+})
 router.post('/upload',jwtVerification,upload.single('file'),async(req,res)=>{
      try {
           console.log("PROFILE IMAGE UPLOADING FOR THE USER_ID: ",req.userId);
@@ -176,6 +199,29 @@ router.get('/channel/list',jwtVerification,async(req,res)=>{
         console.log(error);
         res.json({
             error:false,
+            message:error.message
+        })
+    }
+})
+router.post('/channel/get-details',jwtVerification,async(req,res)=>{
+    try {
+        await get_particular_channel_detail(req.body.id).then((resp)=>{
+             if(resp.error==false)
+               res.json({
+                error:false,
+                data:resp.data
+            })
+            else
+             res.json({
+               error:true,
+               message:resp.message
+            })
+        })
+    } catch (error) {
+        console.log("ERROR IN GET DETAILS OF CHENNEL");
+        console.log(error);
+        res.json({
+            error:true,
             message:error.message
         })
     }

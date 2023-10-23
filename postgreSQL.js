@@ -159,6 +159,37 @@ const user_details=async(userId)=>{
      console.log("[+]DISCONNECTED");
   }
 }
+//get follower details
+const follower_details=async(followerid)=>{
+  const client=await pool.connect();
+  console.log("[+}CONNECTED");
+  try {
+     const result=await client.query('SELECT users.id,users.name,user_image.img_id,user_image.img_name,user_image.img_data,user_image.img_mime_type FROM users LEFT JOIN user_image ON users.id=user_image.user_id WHERE users.id=$1',[followerid]);
+     console.log("FOLLOWER DETAILS-->",result.rows[0]);
+     const {id,name,img_id,img_name,img_data}=result.rows[0];
+     const modifiedData = { ...result.rows[0] };
+
+     // Check if img_data is not null and modify it
+     if (img_data !== null) {
+        modifiedData.img_data = img_data.toString('base64');
+     }
+     return {
+      error:false,
+      data:modifiedData
+     }
+  } catch (error) {
+      console.log("QUERY FAILED ON GETTING USER DETAILS");
+      console.log("ERROR-->",error);
+      return {
+        error:true,
+        message:error.message
+      }
+  }
+  finally{
+     await client.release();
+     console.log("[+]DISCONNECTED");
+  }
+}
 //for creating channel
 const create_channel=async(userId,name,desc,fileName,fileBuffer,fileType)=>{
   const client=await pool.connect();
@@ -206,6 +237,33 @@ const get_all_channels=async()=>{
    console.log("[+]DISCONNECTED");
   }
 }
+//get details of a particular channel
+const get_particular_channel_detail=async(id)=>{
+  const client=await pool.connect();
+  console.log("[+]CONNECTED");
+  try {
+      const result=await client.query('SELECT * FROM channel WHERE id=$1',[id]);
+      const modifiedData = { ...result.rows[0] };
+      console.log("img_data",modifiedData.img_data)
+      if(modifiedData.img_data)
+        modifiedData.img_data=modifiedData.img_data.toString('base64');
+      return {
+        error:false,
+        data:modifiedData
+      }
+  } catch (error) {
+     console.log("QUER EXECUTION FAILED");
+     console.log(error);
+     return {
+      error:true,
+      message:error.message
+     }
+  }
+  finally{
+    await client.release();
+    console.log("DISCONNECTED");
+  }
+}
 //user joining a channel
 const join_channel=async(userId,channelId)=>{
   const client=await pool.connect();
@@ -237,4 +295,4 @@ const join_channel=async(userId,channelId)=>{
       console.log("[-]DISCONNECTED");
     }
 }
-module.exports={signup,login,uploadImage,user_details,create_channel,get_all_channels,join_channel}
+module.exports={signup,login,uploadImage,user_details,follower_details,create_channel,get_all_channels,get_particular_channel_detail,join_channel}
