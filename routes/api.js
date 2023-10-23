@@ -127,9 +127,15 @@ router.post('/upload',jwtVerification,upload.single('file'),async(req,res)=>{
          })
      }
 })
-router.post('/channel/create',jwtVerification,async(req,res)=>{
+router.post('/channel/create',jwtVerification,upload.single('file'),async(req,res)=>{
     try {
-         await create_channel(req.userId,req.body.name,req.body.desc).then((resp)=>{
+        console.log("FILE--->",req.file);
+        console.log("name-->",req.body.name);
+        console.log("desc-->",req.body.desc);
+        const fileBuffer=req.file.buffer;
+        const fileName=req.file.originalname;
+        const fileType=req.file.mimetype;
+         await create_channel(req.userId,req.body.name,req.body.desc,fileName,fileBuffer,fileType).then((resp)=>{
               if(resp.error==false)
                 res.json({
                     error:false,

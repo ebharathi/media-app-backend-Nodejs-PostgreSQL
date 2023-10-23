@@ -54,7 +54,7 @@ const login=async(reqName,reqPassword)=>{
                if(isPasswordSame)
                {
                   //Generate JWT token
-                  const token=jwt.sign({userId:user.id},'qazwsxplmokn',{expiresIn:'1h'});
+                  const token=jwt.sign({userId:user.id},'qazwsxplmokn',{expiresIn:'5h'});
                   
                   return {
                     error:false,
@@ -160,11 +160,11 @@ const user_details=async(userId)=>{
   }
 }
 //for creating channel
-const create_channel=async(userId,name,desc)=>{
+const create_channel=async(userId,name,desc,fileName,fileBuffer,fileType)=>{
   const client=await pool.connect();
   console.log("[+]CONNECTED"); 
   try {
-      const result=await client.query('INSERT INTO channel(name,owner,description)VALUES($1,$2,$3) RETURNING id',[name,userId,desc])
+      const result=await client.query('INSERT INTO channel(name,owner,description,img_name,img_data,img_mime_type)VALUES($1,$2,$3,$4,$5,$6) RETURNING id',[name,userId,desc,fileName,fileBuffer,fileType])
       console.log("R-->",result.rows[0]);
       return {
         error:false,
