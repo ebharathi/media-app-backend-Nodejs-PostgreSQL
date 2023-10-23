@@ -1,5 +1,5 @@
 const router=require('express').Router();
-const {signup,login,uploadImage,user_details,create_channel,get_all_channels}=require('../postgreSQL')
+const {signup,login,uploadImage,user_details,create_channel,get_all_channels,join_channel}=require('../postgreSQL')
 //JWT VERIFICATION
 const {jwtVerification}=require("../middleware/jwtVerify");
 //FOR AVATAR UPLOAD
@@ -179,5 +179,28 @@ router.get('/channel/list',jwtVerification,async(req,res)=>{
             message:error.message
         })
     }
+})
+router.post('/channel/join',jwtVerification,async(req,res)=>{
+     try {
+         await join_channel(req.userId,req.body.channelId).then((resp)=>{
+             if(resp.error==false)
+               res.json({
+                  error:false,
+                  message:"A new follower added"
+            })
+            else
+             res.json({
+               error:true,
+               message:resp.message
+            })
+         })
+     } catch (error) {
+         console.log("ERROR IN ROUTER FOR JOINING A CHANNEL");
+         console.log(error);
+         res.json({
+            error:true,
+            message:error.message
+         })
+     }
 })
 module.exports={router}

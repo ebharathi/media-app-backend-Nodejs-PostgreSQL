@@ -183,6 +183,7 @@ const create_channel=async(userId,name,desc,fileName,fileBuffer,fileType)=>{
     console.log("[-]DISCONNECTED");
   }
 }
+//listing channels
 const get_all_channels=async()=>{
   const client=await pool.connect();
   console.log("[+]CONNECTED");
@@ -205,4 +206,35 @@ const get_all_channels=async()=>{
    console.log("[+]DISCONNECTED");
   }
 }
-module.exports={signup,login,uploadImage,user_details,create_channel,get_all_channels}
+//user joining a channel
+const join_channel=async(userId,channelId)=>{
+  const client=await pool.connect();
+  console.log("[+]CONNECTED");
+    try {
+        const check=await client.query('SELECT id,name FROM channel WHERE id=$1 AND $2=ANY(members)',[channelId,userId]);
+        if(check.rows.length>0)
+        {
+          return {
+            error:true,
+            message:`User already Following`
+          }
+        }
+       //else
+        await client.query(`UPDATE channel SET members=array_append(members,$1) WHERE id=$2`,[userId,channelId]);
+       return {
+        error:false 
+       }
+    } catch (error) {
+       console.log("QUERY EXECUTION FAILED FOR JOINING A CHANNEL");
+       console.log("error:  ",error);
+       return {
+        error:true,
+        message:error.message
+       }
+    }
+    finally{
+      await client.release();
+      console.log("[-]DISCONNECTED");
+    }
+}
+module.exports={signup,login,uploadImage,user_details,create_channel,get_all_channels,join_channel}
