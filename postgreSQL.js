@@ -183,4 +183,26 @@ const create_channel=async(userId,name,desc)=>{
     console.log("[-]DISCONNECTED");
   }
 }
-module.exports={signup,login,uploadImage,user_details,create_channel}
+const get_all_channels=async()=>{
+  const client=await pool.connect();
+  console.log("[+]CONNECTED");
+  try {
+      const result=await client.query('SELECT * FROM channel');
+      return {
+        error:false,
+        channels:result.rows
+      }
+  } catch (error) {
+       console.log("QUERY EXECUTION FAILED FOR FETCHING ALL CHANNELS");
+       console.log(error);
+       return {
+        error:true,
+        message:error.message
+       }
+  }
+  finally{
+   await client.release();
+   console.log("[+]DISCONNECTED");
+  }
+}
+module.exports={signup,login,uploadImage,user_details,create_channel,get_all_channels}

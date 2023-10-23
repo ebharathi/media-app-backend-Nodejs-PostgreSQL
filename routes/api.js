@@ -1,5 +1,5 @@
 const router=require('express').Router();
-const {signup,login,uploadImage,user_details,create_channel}=require('../postgreSQL')
+const {signup,login,uploadImage,user_details,create_channel,get_all_channels}=require('../postgreSQL')
 //JWT VERIFICATION
 const {jwtVerification}=require("../middleware/jwtVerify");
 //FOR AVATAR UPLOAD
@@ -149,6 +149,29 @@ router.post('/channel/create',jwtVerification,async(req,res)=>{
             error:true,
             message:error.message
          })
+    }
+})
+router.get('/channel/list',jwtVerification,async(req,res)=>{
+    try {
+        await get_all_channels().then((resp)=>{
+            if(resp.error==false)
+             res.json({
+              error:false,
+              channels:resp.channels
+            })
+            else
+              res.json({
+              error:false,
+              message:resp.message
+            })
+        })
+    } catch (error) {
+        console.log("ERROR IN LISTING ALL CHANNELS");
+        console.log(error);
+        res.json({
+            error:false,
+            message:error.message
+        })
     }
 })
 module.exports={router}
